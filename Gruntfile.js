@@ -5,10 +5,11 @@ module.exports = function(grunt) {
     //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     concat: {
       options: {
-        separator: ';'
+        separator: ';',
       },
-      dest: {
-        src: ['/public/**/*.js']
+      dist: {
+          src: ['public/**/*.js'],
+          dest: 'public/dist/script.js'
       }
     },
 
@@ -28,15 +29,10 @@ module.exports = function(grunt) {
     },
 //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     uglify: {
-      files: [
-        {
-          cwd:'./public',
-          src:['**/*.js'],
-          dest: './public/dist',
-          ext:'.min.js',
-          extDot:'first'
-        },
-      ],
+      dist: {
+          src: ['public/dist/script.js'],
+          dest: 'public/dist/script.min.js'
+      },
     },
 
     jshint: {
@@ -54,17 +50,14 @@ module.exports = function(grunt) {
     },
 //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     cssmin: {
-      files: [
-        {
-          cwd: './public',
-          src: ['./*.css'],
-          dest: './public/dist',
-          ext:'.min.css',
-          extDot: 'first',
-        }
-      ],
+      dist: {
+        src:['public/style.css'],
+        dest: 'public/dist/style.min.css'
+      }
+    },
 
-        
+    clean: {
+      dist: ['public/dist/*']
     },
 
     watch: {
@@ -98,6 +91,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-nodemon');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   grunt.registerTask('server-dev', function (target) {
     // Running nodejs in a different process and displaying output on the main console
@@ -120,9 +114,7 @@ module.exports = function(grunt) {
     'mochaTest'
   ]);
 
-  grunt.registerTask('build', [
-    grunt.task.run(['concat', 'uglify', 'cssmin'])
-  ]);
+  grunt.registerTask('build', ['clean', 'concat', 'uglify', 'cssmin']);
 
   grunt.registerTask('upload', function(n) {
     if(grunt.option('prod')) {
@@ -133,9 +125,7 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('deploy', [
-      grunt.task.run(['build', 'upload'])
-  ]);
+  grunt.registerTask('deploy', ['build', 'upload']);
 
 
 };
