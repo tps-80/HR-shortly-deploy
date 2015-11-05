@@ -54,7 +54,15 @@ db.once('open', function (callback) {
     username: String,
     password: String,
     timestamp: Date
-  })
+  });
+  exports.userSchema.methods.hashPassword = function (password) {
+    var cipher = Promise.promisify(bcrypt.hash);
+    return cipher(password, null, null).bind(this)
+      .then(function(hash) {
+        
+      });
+
+  }
   exports.User = mongoose.model('User', userSchema);
   
   //URLS
@@ -69,3 +77,19 @@ db.once('open', function (callback) {
   exports.Url = mongoose.model('Url', urlSchema);
 
 });
+
+  comparePassword: function(attemptedPassword, callback) {
+    bcrypt.compare(attemptedPassword, this.get('password'), function(err, isMatch) {
+      callback(isMatch);
+    });
+  },
+  hashPassword: function(){
+    var cipher = Promise.promisify(bcrypt.hash);
+    return cipher(this.get('password'), null, null).bind(this)
+      .then(function(hash) {
+        this.set('password', hash);
+      });
+  }
+
+
+
