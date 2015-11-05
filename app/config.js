@@ -48,12 +48,24 @@ mongoose.connect('mongodb://localhost/test');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
-  exports.userSchema = mongoose.Schema({
-    id: Number,
+  //USERS
+  exports.userSchema = new mongoose.Schema({
+    // id: Number,
     username: String,
     password: String,
     timestamp: Date
   })
   exports.User = mongoose.model('User', userSchema);
   
+  //URLS
+  exports.urlSchema = new mongoose.Schema({
+    url: String,
+    base_url: String,
+    code: String,
+    title: String,
+    visits: Number,
+    timestamp: Date
+  }) 
+  exports.Url = mongoose.model('Url', urlSchema);
+
 });
