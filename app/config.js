@@ -44,10 +44,13 @@
 
 // module.exports = db;
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt-nodejs');
+var crypto = require('crypto');
 mongoose.connect('mongodb://localhost/test');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
+
   //USERS
   exports.userSchema = new mongoose.Schema({
     // id: Number,
@@ -55,15 +58,27 @@ db.once('open', function (callback) {
     password: String,
     timestamp: Date
   });
-  exports.userSchema.methods.hashPassword = function (password) {
-    var cipher = Promise.promisify(bcrypt.hash);
-    return cipher(password, null, null).bind(this)
-      .then(function(hash) {
-        
+  exports.userSchema.methods.hashPassword = function (callback) {
+    var that = this;
+    bcrypt.hash(this.password, null, null, function (err, hash) {
+        if(err) {
+          console.log('ERROR/hashPassword:', err)
+        }
+        that.password = hash;
+        callback(that);
       });
 
   }
-  exports.User = mongoose.model('User', userSchema);
+  exports.userSchema.methods.comparePassword = function (attemptedPassword, callback) {
+    bcrypt.compare(attemptedPassword, this.password, function (err, isMatch) {
+      if(err) {
+        console.log('ERROR/comparePassword:', err);
+      } else {
+        callback(isMatch);
+      }
+    })
+  }
+  exports.User = mongoose.model('User', exports.userSchema);
   
   //URLS
   exports.urlSchema = new mongoose.Schema({
@@ -74,22 +89,12 @@ db.once('open', function (callback) {
     visits: Number,
     timestamp: Date
   }) 
-  exports.Url = mongoose.model('Url', urlSchema);
-
-});
-
-  comparePassword: function(attemptedPassword, callback) {
-    bcrypt.compare(attemptedPassword, this.get('password'), function(err, isMatch) {
-      callback(isMatch);
-    });
-  },
-  hashPassword: function(){
-    var cipher = Promise.promisify(bcrypt.hash);
-    return cipher(this.get('password'), null, null).bind(this)
-      .then(function(hash) {
-        this.set('password', hash);
-      });
+  exports.urlSchema.methods.setCode = function (callback) {
+    var shasum = crypto.createHash('sha1');
+    shasum.update(this.get('url'));
+    this.code = shasum.digest('hex').slice(0, 5);
+    callback(this);
   }
-
-
+  exports.Url = mongoose.model('Url', exports.urlSchema);
+});
 

@@ -7,11 +7,6 @@ var handler = require('./lib/request-handler');
 
 var app = express();
 
-app.use(express.session({
-    secret: 'foo',
-    store: new MongoStore(options)
-}));
-
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
@@ -19,7 +14,12 @@ app.configure(function() {
   app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
   app.use(express.cookieParser('shhhh, very secret'));
-  app.use(express.session());
+  // app.use(express.session());
+  app.use(express.session({
+    secret: 'foo',
+    store: new MongoStore({url: 'mongodb://localhost:27017'})
+    //turns out we need to tell the server where mongo is connected
+  }));
 });
 
 app.get('/', util.checkUser, handler.renderIndex);
